@@ -18,6 +18,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+std::vector<std::string> kStringList;
 
 PYBIND11_MODULE(PyImageSequence, module) {
     // ImageElement class.
@@ -29,11 +30,13 @@ PYBIND11_MODULE(PyImageSequence, module) {
             .def(pybind11::init<const std::string &>(), pybind11::arg("path"))
             .def("basename", &ImageElement::basename)
             .def("dirname", &ImageElement::dirname)
+            .def("setDirName", &ImageElement::setDirName, pybind11::arg("path"))
             .def_readwrite("name", &ImageElement::name)
-            .def_readwrite("ext", &ImageElement::extension)
+            .def_readwrite("extension", &ImageElement::extension)
             .def("getFilePath", &ImageElement::getFilePath, "Return serialized file path.")
             .def("getPaths", &ImageElement::getPaths, "Get all sequence file paths for this object.")
             .def("evalAtFrame", &ImageElement::evalAtFrame, pybind11::arg("frame"))
+            .def("findFramesOnDisk", &ImageElement::findFramesOnDisk)
             .def("__repr__", [](ImageElement &self){
                 return "ImageElement(path=\"" + self.getFilePath() + "\")";
             })
@@ -45,5 +48,9 @@ PYBIND11_MODULE(PyImageSequence, module) {
                 return imSeq == other;
             });
 
-    module.def("scandir", &scandir,  "Scan directory for images.", pybind11::arg("path"));
+    module.def("scandir",
+               &scandir,
+               "Scan directory for images.",
+               pybind11::arg("path"),
+               pybind11::arg("extensions")=kStringList);
 }

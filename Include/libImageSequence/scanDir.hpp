@@ -21,9 +21,10 @@
 
 /*! Scan directory for Images.
  *
- * @param path
- * @return
+ * @param path: Directory to scan for Images.
+ * @param extensions: File types to filter for. If array is empty all file types will be allowed.
+ * @return: Found image elements.
  */
-std::vector<ImageElement> scandir(const std::string &path);
+std::vector<ImageElement> scandir(const std::string &path, const std::vector<std::string> &extensions={});
 
 #endif //SCANDIR_HPP

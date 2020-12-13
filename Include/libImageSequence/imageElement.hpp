@@ -25,13 +25,14 @@ public:
     ~ImageElement();
     std::string basename();
     std::string dirname();
+    void setDirName(const std::string &path);
     std::string name;
     std::string extension;
     std::string getFilePath();
+    bool findFramesOnDisk();
     std::string evalAtFrame(const int &frame);
     std::vector<std::string> getPaths();
     bool operator== (ImageElement &other);
-    static bool validateFile(const std::string &path);
     void merge(ImageElement &other);
     std::vector<int> getFrames();
     void setFrames(const std::vector<int> &frames);

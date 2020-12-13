@@ -14,7 +14,6 @@
 
 #include "libImageSequence/imageElement.hpp"
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/xpressive/xpressive.hpp>
@@ -24,27 +23,13 @@
 
 using namespace boost::xpressive;
 
-std::vector<std::string> kSupportedImageFileExtensions = {
-        ".bmp",
-        ".dpx",
-        ".exr",
-        ".hdr",
-        ".jpeg",
-        ".jpg",
-        ".png",
-        ".rat",
-        ".tga",
-        ".tif",
-        ".tiff",
-        ".tx"
-};
-
 
 /*! Regex to extract name and optional frame information.*/
 const sregex kFileNameRE = sregex::compile(
-        "(?P<name>[a-zA-Z_\\-\\d\\[\\]]+)"
-        "(\\.((?P<frame>\\d+)|(?P<token>[^\\.]+)))?"
-        "(?P<ext>\\.[a-zA-Z_\\d]+)$"
+        "(?P<name>[\\w\\-\\[\\]]+)"
+        "(\\.((?P<frame>\\d+)|"
+        "(?P<token>((%0\\d+d)|([#@]+)))))?"
+        "(?P<ext>\\.\\w+)$"
 );
 
 
@@ -86,6 +71,7 @@ void ImageElement::parseName(const std::string &filename) {
     }
 }
 
+
 /*! Create file name.
  *
  * @return: Reconstructed file name.
@@ -106,7 +92,35 @@ std::string ImageElement::buildName() {
  * @return: File path with frame token.
  */
 std::string ImageElement::getFilePath() {
-    return this->filePath + "/" + this->buildName();
+    boost::filesystem::path fullPath = boost::filesystem::path(this->filePath) / this->buildName();
+    return fullPath.string();
+}
+
+
+/*! Fined frames on disk for element.
+ *
+ * @return: False if no frames found else true.
+ */
+bool ImageElement::findFramesOnDisk() {
+    // No frame toke found (eg .%04d or ####).
+    if(this->filePath.empty()){
+        std::cerr << "Error ImageElement does not have a path." << std::endl;
+        return false;
+    }
+
+    if (this->framePadding.empty()){
+        return false;
+    }
+
+    for (auto &item : boost::filesystem::directory_iterator(this->filePath)){
+        if(boost::filesystem::is_regular_file(item.path())){
+            ImageElement element(item.path().string());
+            if (*this == element){
+                this->merge(element);
+            }
+        }
+    }
+    return true;
 }
 
 
@@ -127,6 +141,15 @@ std::string ImageElement::basename() {
  */
 std::string ImageElement::dirname() {
     return this->filePath;
+}
+
+
+/*! Set new directory.
+ *
+ * @param path: New directory path.
+ */
+void ImageElement::setDirName(const std::string &path) {
+    this->filePath = path;
 }
 
 
@@ -158,6 +181,7 @@ std::vector<std::string> ImageElement::getPaths() {
     return allFilePaths;
 }
 
+
 /*!Compare serialization elements file path with other element.
  *
  * @param other: Element to compare to.
@@ -168,20 +192,6 @@ bool ImageElement::operator==(ImageElement &other) {
 }
 
 
-/*! Check if a file type is valid (only file name).
- *
- * @param path: File name to validate.
- * @return: True if is valid else false.
- */
-bool ImageElement::validateFile(const std::string &path) {
-    for (auto &ext : kSupportedImageFileExtensions){
-        if (boost::algorithm::ends_with(path, ext)){
-            return true;
-        }
-    }
-    return false;
-}
-
 /*! Update element with frame's from other element.
  *
  * @param other: Element to merge.
@@ -191,6 +201,7 @@ void ImageElement::merge(ImageElement &other) {
    this->frames.insert(this->frames.end(), otherFrames.begin(), otherFrames.end());
    this->upToDate = false;
 }
+
 
 /*! Get element frames.
  *
@@ -205,6 +216,7 @@ std::vector<int> ImageElement::getFrames() {
     }
     return this->frames;
 }
+
 
 /*! Set element frames.
  *

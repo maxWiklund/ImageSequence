@@ -14,26 +14,45 @@
 
 #include "libImageSequence/scanDir.hpp"
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/unordered_map.hpp>
 
 #include <iostream>
 
+
+bool endswith(const std::string &path, const std::vector<std::string> &extensions){
+    for(auto &ext : extensions){
+        if (boost::algorithm::ends_with(path, ext)){
+            return true;
+        }
+    }
+    return false;
+}
+
+
 /*! Scan directory for image sequences and generate elements for them.
  *
  * @param path: Directory path to scan.
+ * @param extensions: File types to filter for. If array is empty all file types will be allowed.
  * @return:
  */
-std::vector<ImageElement> scandir(const std::string &path) {
+std::vector<ImageElement> scandir(const std::string &path, const std::vector<std::string> &extensions) {
     std::vector<ImageElement> foundImages;
     if (!boost::filesystem::is_directory(path)){
-        std::cerr << "File path is \"" << path << "\" is not a directory. " << std::endl;
+        std::cerr << "File path is \"" << path << "\" not a directory. " << std::endl;
         return foundImages;
     }
     boost::unordered_map<std::string, ImageElement> table{};
 
     for (auto & item : boost::filesystem::directory_iterator(path)){
-        if (boost::filesystem::is_regular_file(item.path()) && ImageElement::validateFile(item.path().string())){
+
+        // If filter is applied check if file ends with extensions.
+        if(!extensions.empty() && !endswith(item.path().string(), extensions)){
+            continue;
+        }
+
+        if (boost::filesystem::is_regular_file(item.path())){
             ImageElement element{item.path().string()};
 
             auto search = table.find(element.basename());  // Try to find the file pattern in hashmap.
