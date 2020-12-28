@@ -9,6 +9,13 @@ set(SOURCES
 
 include_directories(${PROJECT_SOURCE_DIR}/Include)
 
+configure_file(
+        version.h.in
+        ${CMAKE_BINARY_DIR}/version.h
+        @ONLY
+)
+include_directories(${CMAKE_BINARY_DIR})
+
 # Create python module.
 add_library(PyImageSequence SHARED ${SOURCES})
 

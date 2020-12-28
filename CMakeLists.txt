@@ -4,6 +4,8 @@ project(ImageSequence
         LANGUAGES CXX
         )
 
+
+set(ImageSequence_VERSION "${CMAKE_PROJECT_VERSION}-dev.1")
 set(CMAKE_CXX_STANDARD 14)
 
 # Build type

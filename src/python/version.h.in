@@ -1,0 +1,10 @@
+//
+// Created by max-wi on 28/12/2020.
+//
+
+#ifndef IMAGESEQUENCE_VERSION_H_IN
+#define IMAGESEQUENCE_VERSION_H_IN
+
+#cmakedefine PROJECT_VERSION "@ImageSequence_VERSION@"
+
+#endif //IMAGESEQUENCE_VERSION_H_IN

@@ -14,6 +14,7 @@
 
 #include "libImageSequence/imageElement.hpp"
 #include "libImageSequence/scanDir.hpp"
+#include "version.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -53,4 +54,8 @@ PYBIND11_MODULE(PyImageSequence, module) {
                "Scan directory for images.",
                pybind11::arg("path"),
                pybind11::arg("extensions")=kStringList);
+    module.attr("__author__")   = "Max Wiklund";
+    module.attr("__email__")    = "info@maxwiklund.com";
+    module.attr("__license__")  = "Apache License Version 2.0";
+    module.attr("__version__")  = PROJECT_VERSION;
 }
